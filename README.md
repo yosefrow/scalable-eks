@@ -54,18 +54,22 @@ account.hcl, region.hcl, and service.hcl are used to manage variables includes f
 
 ### Basic Commands
 
+*Non-interactive*
+- Attach the `--terragrunt-non-interactive` to use  `run-all` commands without confirmation **Use with Caution!**
+
 *Plan*
-- ` terragrunt run-all plan`
+- ` terragrunt run-all plan --terragrunt-non-interactive`
 
 *Apply*
-- ` terragrunt run-all apply`
+- ` terragrunt run-all apply --terragrunt-non-interactive`
 
-*Non-interactive*
-- Attach the `--terragrunt-non-interactive` to `run-all` commands without confirmation **Use with Caution!**
+
 
 ### Troubleshooting
 
-Removing .terragrunt-cache and .terraform.lock.hcl can solve many problems that occur with TF and TG
+Removing `.terragrunt-cache` and `.terraform.lock.hcl` can solve many problems that occur with TF and TG e.g. `find': find . -regex '.*\.\(terragrunt-cache\|terraform\.lock\.hcl\)' -exec rm -rf {} \;`
+
+If you face a locking issue and you are sure nothing else is using the lock you can remove the lock with `terragrunt force-unlock lockid`
 
 ## VPC & Subnets
 
