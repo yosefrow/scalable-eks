@@ -1,0 +1,3 @@
+locals {
+    name = "scalable-eks"
+}

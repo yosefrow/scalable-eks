@@ -1,3 +1,3 @@
-locals = {
-    region = "eu-west-1"
+locals {
+    name = "eu-west-1"
 }

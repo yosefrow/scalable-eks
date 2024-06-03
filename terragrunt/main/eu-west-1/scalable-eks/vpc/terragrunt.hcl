@@ -3,8 +3,9 @@ include "root" {
 }
 
 locals {
-    account = find_in_parent_folders("account.hcl")
-    region = find_in_parent_folders("region.hcl")
+    account = read_terragrunt_config(find_in_parent_folders("account.hcl")).locals
+    region = read_terragrunt_config(find_in_parent_folders("region.hcl")).locals
+    service = read_terragrunt_config(find_in_parent_folders("service.hcl")).locals
 }
 
 terraform {
@@ -14,7 +15,7 @@ terraform {
 inputs = {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "my-vpc"
+  name = "${local.service.name}-vpc"
   cidr = "10.0.0.0/16"
 
   azs             = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
@@ -22,10 +23,5 @@ inputs = {
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
   enable_nat_gateway = true
-  enable_vpn_gateway = true
-
-  tags = {
-    Terraform = "true"
-    Environment = "dev"
-  }
+  enable_vpn_gateway = false
 }
