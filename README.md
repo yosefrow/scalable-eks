@@ -78,3 +78,13 @@ The VPC contains 3 private networks and 3 public networks spread across 3 AZs. T
 **Note**: The VPC is considered part of the service in this scenario so its located under the service folder. 
 
 Though in many cases vpcs are not service related and can be shared by many services. In cases like that vpc config might be located in a more general folder like region folder or system folder.
+
+## EKS Cluster
+
+The EKS Cluster is deployed contains 2 nodes distributed to 3 private networks in 3 AZs of the VPC we created. 
+
+Although we allow public access to the API, in a production environment we would remove this access and only allow access securely such as through a VPN.
+
+min_size, max_size, and desired_size are all the same (2) because we haven't provisioned a cluster auto-scaler
+
+**Note**: Changing desired_size after provisioning will not influence the number of nodes, but you can raise the min_size as a workaround
