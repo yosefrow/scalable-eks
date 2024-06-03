@@ -1,3 +1,3 @@
 locals {
-    name = "scalable-eks"
+  name = "scalable-eks"
 }

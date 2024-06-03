@@ -1,15 +1,15 @@
 include "root" {
-    path = find_in_parent_folders("root.hcl")
+  path = find_in_parent_folders("root.hcl")
 }
 
 locals {
-    account = read_terragrunt_config(find_in_parent_folders("account.hcl")).locals
-    region = read_terragrunt_config(find_in_parent_folders("region.hcl")).locals
-    service = read_terragrunt_config(find_in_parent_folders("service.hcl")).locals
+  account = read_terragrunt_config(find_in_parent_folders("account.hcl")).locals
+  region  = read_terragrunt_config(find_in_parent_folders("region.hcl")).locals
+  service = read_terragrunt_config(find_in_parent_folders("service.hcl")).locals
 }
 
 terraform {
-    source = "tfr:///terraform-aws-modules/vpc/aws?version=5.8.1"
+  source = "tfr:///terraform-aws-modules/vpc/aws?version=5.8.1"
 }
 
 inputs = {

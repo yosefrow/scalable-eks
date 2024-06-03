@@ -1,8 +1,8 @@
 locals {
   account = read_terragrunt_config(find_in_parent_folders("account.hcl")).locals
-  region = read_terragrunt_config(find_in_parent_folders("region.hcl")).locals
+  region  = read_terragrunt_config(find_in_parent_folders("region.hcl")).locals
 
-  s3_prefix = "yosefrow"
+  s3_prefix          = "yosefrow"
   tf_s3_state_region = "eu-west-1"
 }
 
@@ -17,10 +17,10 @@ provider "aws" {
 
   default_tags {
     tags = {
-      tfPath = "${path_relative_to_include()}"
+      tf_path = "${path_relative_to_include()}"
       aws_account = "${local.account.name}"
       aws_region = "${local.region.name}"
-      managedBy = "Terragrunt"
+      managed_by = "Terragrunt"
     }
   }
 }
@@ -32,7 +32,7 @@ remote_state {
   config = {
     bucket         = "${local.s3_prefix}-${local.account.name}-terraform-state"
     key            = "${path_relative_to_include()}/terraform.tfstate"
-    region     = local.tf_s3_state_region
+    region         = local.tf_s3_state_region
     encrypt        = true
     profile        = local.account.aws_profile
     dynamodb_table = "${local.account.name}-state-lock"

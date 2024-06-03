@@ -1,3 +1,3 @@
 locals {
-    name = "eu-west-1"
+  name = "eu-west-1"
 }
