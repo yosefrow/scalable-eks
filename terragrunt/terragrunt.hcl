@@ -2,7 +2,7 @@ locals {
     profile = "yosefrow"
     s3_prefix = "yosefrow"
     region = "eu-west-1"
-    name = "main-terraform"
+    name = "main-account"
 }
 
 remote_state {
@@ -14,9 +14,17 @@ remote_state {
   config = {
     bucket         = "${local.s3_prefix}-${local.name}-state"
     key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = loca.region
+    region         = local.region
     encrypt        = true
     profile        = local.profile
     dynamodb_table = "${local.name}-state-lock"
+  }
+  default_tags {
+    tags = {
+      tfProvider = local.name
+      tfPath = "${path_relative_to_include()}"
+      region = local.region
+      managedBy = "Terragrunt"
+    }
   }
 }
