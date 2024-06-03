@@ -45,15 +45,19 @@ inputs = {
   }
 
   vpc_id     = dependency.vpc.outputs.vpc_id
-  subnet_ids = dependency.vpc.outputs.private_subnets_cidr_blocks
+  subnet_ids = dependency.vpc.outputs.private_subnets
 
   # EKS Managed Node Group(s)
 
   eks_managed_node_groups = {
+
+    # 
     main = {
-      min_size     = 1
-      max_size     = 10
-      desired_size = 1
+      # Normally we would enable an autoscaler (Karpenter or Cluster Autoscaler) and
+      # use proper limits. But we haven't added one, so all 3 values are the same
+      min_size     = 2
+      max_size     = 2
+      desired_size = 2
 
       instance_types = ["t3.large"] # normally this list is longer
       capacity_type  = "SPOT"       # normally spot usage is used carefully to not break critical workloads
