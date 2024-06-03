@@ -44,6 +44,10 @@ Terragrunt is used to keep our Terraform DRY
     |               `-- terragrunt.hcl
 ```
 
+State at: https://eu-west-1.console.aws.amazon.com/s3/buckets/yosefrow-main-terraform-state?region=eu-west-1
+
+Lock at: https://eu-west-1.console.aws.amazon.com/dynamodbv2/home?region=eu-west-1#table?name=main-terraform-state-lock
+
 ### root.hcl
 
 The main configuration including the configuration that is included in all modules and is used to generate the remote state and provider and backend files 
@@ -63,8 +67,6 @@ account.hcl, region.hcl, and service.hcl are used to manage variables includes f
 *Apply*
 - ` terragrunt run-all apply --terragrunt-non-interactive`
 
-
-
 ### Troubleshooting
 
 Removing `.terragrunt-cache` and `.terraform.lock.hcl` can solve many problems that occur with TF and TG e.g. `find': find . -regex '.*\.\(terragrunt-cache\|terraform\.lock\.hcl\)' -exec rm -rf {} \;`
@@ -79,6 +81,8 @@ The VPC contains 3 private networks and 3 public networks spread across 3 AZs. T
 
 Though in many cases vpcs are not service related and can be shared by many services. In cases like that vpc config might be located in a more general folder like region folder or system folder.
 
+Deployed to: https://eu-west-1.console.aws.amazon.com/vpcconsole/home?region=eu-west-1#vpcs:tag:Name=scalable-eks-vpc
+
 ## EKS Cluster
 
 The EKS Cluster is deployed contains 2 nodes distributed to 3 private networks in 3 AZs of the VPC we created. 
@@ -88,3 +92,5 @@ Although we allow public access to the API, in a production environment we would
 min_size, max_size, and desired_size are all the same (2) because we haven't provisioned a cluster auto-scaler
 
 **Note**: Changing desired_size after provisioning will not influence the number of nodes, but you can raise the min_size as a workaround
+
+Deployed to: https://eu-west-1.console.aws.amazon.com/eks/home?region=eu-west-1#/clusters/scalable-eks-cluster
