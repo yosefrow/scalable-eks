@@ -26,7 +26,7 @@ inputs = {
   version = "~> 20.0"
 
   cluster_name    = "${local.service.name}-cluster"
-  cluster_version = "1.29"
+  cluster_version = "1.30"
 
   # normally we don't allow public access for security reasons, 
   # see also endpoint_public_access
