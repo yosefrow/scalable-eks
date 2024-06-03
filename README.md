@@ -13,6 +13,14 @@ Modify terragrunt/main/account.hcl so that aws_profile reflects the name of the 
 
 (yosefrow-main by default)
 
+### Setup Kubectl
+
+1. Configure `scripts/setup-kubeconfig.sh` as needed e.g. AWS_PROFILE
+2. `source scripts/setup-kubeconfig.sh`
+3. `kubectl get all --all-namespaces`
+
+**Note**: you will need to export KUBECONFIG every time you open a new shell.
+
 ### Setup AWS Profile
 
 Modify ~/.aws/config
