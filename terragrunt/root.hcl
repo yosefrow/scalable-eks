@@ -17,9 +17,10 @@ provider "aws" {
 
   default_tags {
     tags = {
-      tf_path = "${path_relative_to_include()}"
+      tg_path = "${path_relative_to_include()}"
       aws_account = "${local.account.name}"
       aws_region = "${local.region.name}"
+      environment = "${local.account.environment}"
       managed_by = "Terragrunt"
     }
   }
@@ -35,7 +36,7 @@ remote_state {
     region         = local.tf_s3_state_region
     encrypt        = true
     profile        = local.account.aws_profile
-    dynamodb_table = "${local.account.name}-state-lock"
+    dynamodb_table = "${local.account.name}-terraform-state-lock"
   }
   generate = {
     path      = "backend.tf"

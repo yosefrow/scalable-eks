@@ -13,6 +13,14 @@ Modify terragrunt/main/account.hcl so that aws_profile reflects the name of the 
 
 (yosefrow-main by default)
 
+### Setup Kubectl
+
+1. Configure `scripts/setup-kubeconfig.sh` as needed e.g. AWS_PROFILE
+2. `source scripts/setup-kubeconfig.sh`
+3. `kubectl get all --all-namespaces`
+
+**Note**: you will need to export KUBECONFIG every time you open a new shell.
+
 ### Setup AWS Profile
 
 Modify ~/.aws/config
@@ -44,6 +52,10 @@ Terragrunt is used to keep our Terraform DRY
     |               `-- terragrunt.hcl
 ```
 
+State at: https://eu-west-1.console.aws.amazon.com/s3/buckets/yosefrow-main-terraform-state?region=eu-west-1
+
+Lock at: https://eu-west-1.console.aws.amazon.com/dynamodbv2/home?region=eu-west-1#table?name=main-terraform-state-lock
+
 ### root.hcl
 
 The main configuration including the configuration that is included in all modules and is used to generate the remote state and provider and backend files 
@@ -54,18 +66,20 @@ account.hcl, region.hcl, and service.hcl are used to manage variables includes f
 
 ### Basic Commands
 
+*Non-interactive*
+- Attach the `--terragrunt-non-interactive` to use  `run-all` commands without confirmation **Use with Caution!**
+
 *Plan*
-- ` terragrunt run-all plan`
+- ` terragrunt run-all plan --terragrunt-non-interactive`
 
 *Apply*
-- ` terragrunt run-all apply`
-
-*Non-interactive*
-- Attach the `--terragrunt-non-interactive` to `run-all` commands without confirmation **Use with Caution!**
+- ` terragrunt run-all apply --terragrunt-non-interactive`
 
 ### Troubleshooting
 
-Removing .terragrunt-cache and .terraform.lock.hcl can solve many problems that occur with TF and TG
+Removing `.terragrunt-cache` and `.terraform.lock.hcl` can solve many problems that occur with TF and TG e.g. `find': find . -regex '.*\.\(terragrunt-cache\|terraform\.lock\.hcl\)' -exec rm -rf {} \;`
+
+If you face a locking issue and you are sure nothing else is using the lock you can remove the lock with `terragrunt force-unlock lockid`
 
 ## VPC & Subnets
 
@@ -74,3 +88,17 @@ The VPC contains 3 private networks and 3 public networks spread across 3 AZs. T
 **Note**: The VPC is considered part of the service in this scenario so its located under the service folder. 
 
 Though in many cases vpcs are not service related and can be shared by many services. In cases like that vpc config might be located in a more general folder like region folder or system folder.
+
+Deployed to: https://eu-west-1.console.aws.amazon.com/vpcconsole/home?region=eu-west-1#vpcs:tag:Name=scalable-eks-vpc
+
+## EKS Cluster
+
+The EKS Cluster is deployed contains 2 nodes distributed to 3 private networks in 3 AZs of the VPC we created. 
+
+Although we allow public access to the API, in a production environment we would remove this access and only allow access securely such as through a VPN.
+
+min_size, max_size, and desired_size are all the same (2) because we haven't provisioned a cluster auto-scaler
+
+**Note**: Changing desired_size after provisioning will not influence the number of nodes, but you can raise the min_size as a workaround
+
+Deployed to: https://eu-west-1.console.aws.amazon.com/eks/home?region=eu-west-1#/clusters/scalable-eks-cluster
