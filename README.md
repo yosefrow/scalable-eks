@@ -21,12 +21,14 @@ Modify terragrunt/main/account.hcl so that aws_profile reflects the name of the 
 
 **Note**: you will need to export KUBECONFIG every time you open a new shell.
 
+**Tip**: If you run into API errors, make sure you are running a compatible version of awscli (which generates the config) and kubectl (which uses the config). EKS is provisioned with v1.30.
+
 ### Setup AWS Profile
 
 Modify ~/.aws/config
 
 Example config:
-```toml
+```
 [profile yosefrow-main]
 region=eu-west-1
 output=json
