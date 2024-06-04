@@ -9,7 +9,12 @@ EKS Deployment that supports Scaling
 1. Install terraform (v1.8.4 as of this writing)
 2. Install terragrunt (v0.58.10 as of this writing)
 
-Modify terragrunt/main/account.hcl so that aws_profile reflects the name of the aws profile in your ~/.aws/config 
+### Custom Settings
+
+Option 1. Modify terragrunt/{account}/account.hcl so that aws_profile reflects the name of the aws profile in your ~/.aws/config 
+
+Option 2. (Temporary) Set env vars by copying .env -> .env.example 
+**Requires running `source .env` in each new terminal session**
 
 (yosefrow-main by default)
 
