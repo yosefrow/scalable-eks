@@ -2,9 +2,10 @@ locals {
   account = read_terragrunt_config(find_in_parent_folders("account.hcl")).locals
   region  = read_terragrunt_config(find_in_parent_folders("region.hcl")).locals
 
-  s3_prefix          = "yosefrow"
-  tf_s3_state_region = "eu-west-1"
-  kubeconfig         = "${get_repo_root()}/terragrunt/kubeconfig"
+  # Unique S3 Prefix to ensure state buckets don't conflict
+  tf_state_s3_prefix   =  get_env("TF_STATE_S3_PREFIX", "yosefrow")
+  tf_state_region      = "eu-west-1"
+  kubeconfig           = "${get_repo_root()}/terragrunt/kubeconfig"
 }
 
 generate "provider" {
@@ -44,9 +45,9 @@ EOF
 remote_state {
   backend = "s3"
   config = {
-    bucket         = "${local.s3_prefix}-${local.account.name}-terraform-state"
+    bucket         = "${local.tf_state_s3_prefix}-${local.account.name}-terraform-state"
     key            = "${path_relative_to_include()}/terraform.tfstate"
-    region         = local.tf_s3_state_region
+    region         = local.tf_state_region
     encrypt        = true
     profile        = local.account.aws_profile
     dynamodb_table = "${local.account.name}-terraform-state-lock"
