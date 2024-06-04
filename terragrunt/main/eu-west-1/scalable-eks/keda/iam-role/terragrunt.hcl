@@ -13,7 +13,7 @@ dependency "iam-policy" {
   config_path = "../iam-policy"
 
   # Set mock outputs that are returned when there are no outputs available before apply
-  mock_outputs_allowed_terraform_commands = ["validate"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {
     arn = "arn:fake-iam-policy"
   }
@@ -23,7 +23,7 @@ dependency "eks" {
   config_path = "../../eks/"
 
   # Set mock outputs that are returned when there are no outputs available before apply
-  mock_outputs_allowed_terraform_commands = ["validate"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {
     oidc_provider_arn = "arn:aws:iam::012345678901:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/FAKEFAKEFAKE12844C7333374CC09D"
   }

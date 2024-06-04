@@ -12,7 +12,7 @@ dependency "iam-role" {
   config_path = "../iam-role"
 
   # Set mock outputs that are returned when there are no outputs available before apply
-  mock_outputs_allowed_terraform_commands = ["validate"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {
     iam_role_arn = "arn:fake-iam-role"
   }
