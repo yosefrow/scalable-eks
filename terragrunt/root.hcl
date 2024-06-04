@@ -4,6 +4,7 @@ locals {
 
   s3_prefix          = "yosefrow"
   tf_s3_state_region = "eu-west-1"
+  kubeconfig         = "${get_repo_root()}/terragrunt/kubeconfig"
 }
 
 generate "provider" {
@@ -23,6 +24,18 @@ provider "aws" {
       environment = "${local.account.environment}"
       managed_by = "Terragrunt"
     }
+  }
+}
+EOF
+}
+
+generate "helm-provider" {
+  path      = "helm-provider.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
+provider "helm" {
+  kubernetes {
+    config_path = "${local.kubeconfig}"
   }
 }
 EOF

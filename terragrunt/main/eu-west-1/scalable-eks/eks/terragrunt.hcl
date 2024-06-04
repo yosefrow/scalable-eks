@@ -1,17 +1,18 @@
 include "root" {
-  path = find_in_parent_folders("root.hcl")
+  path   = find_in_parent_folders("root.hcl")
+  expose = true
 }
 
 locals {
   service = read_terragrunt_config(find_in_parent_folders("service.hcl")).locals
+  cluster_name = "${local.service.name}-cluster"
 }
 
 dependency "vpc" {
   config_path = "../vpc"
 
-  # Configure mock outputs for the `validate` command that are returned when there are no outputs available (e.g the
-  # module hasn't been applied yet.
-  mock_outputs_allowed_terraform_commands = ["validate"]
+  # Set mock outputs that are returned when there are no outputs available before apply
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {
     vpc_id = "fake-vpc-id"
   }
@@ -19,13 +20,18 @@ dependency "vpc" {
 
 terraform {
   source = "tfr:///terraform-aws-modules/eks/aws?version=20.13.0"
+
+  after_hook "kubeconfig" {
+    commands = ["apply"]
+    execute  = ["bash", "-c", "aws eks update-kubeconfig --name ${local.cluster_name} --kubeconfig ${include.root.locals.kubeconfig} 2>/dev/null"]
+  }
 }
 
 inputs = {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
 
-  cluster_name    = "${local.service.name}-cluster"
+  cluster_name    = local.cluster_name
   cluster_version = "1.30"
 
   # normally we don't allow public access for security reasons, 
@@ -70,6 +76,8 @@ inputs = {
   # Cluster access entry
   # To add the current caller identity as an administrator
   enable_cluster_creator_admin_permissions = true
+  # IRSA Configuration
+  enable_irsa = true
 
   # access_entries = {
   #   # Consider adding an access entry with a policy associated

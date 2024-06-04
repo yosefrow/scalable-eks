@@ -15,9 +15,19 @@ Modify terragrunt/main/account.hcl so that aws_profile reflects the name of the 
 
 ### Setup Kubectl
 
-1. Configure `scripts/setup-kubeconfig.sh` as needed e.g. AWS_PROFILE
-2. `source scripts/setup-kubeconfig.sh`
-3. `kubectl get all --all-namespaces`
+When you deploy EKS it will automatically setup a kubeconfig file for you at "${REPO_ROOT_DIR}/terragrunt/kubeconfig" which will also be used by the helm provider 
+
+```bash
+echo ">>> Set KUBECONFIG"
+REPO_ROOT_DIR=~/path-to-repo-on-my-pc # Set to whatever your path is
+# For example: REPO_ROOT_DIR=~/projects/scalable-eks
+export KUBECONFIG="${REPO_ROOT_DIR}/terragrunt/kubeconfig"
+
+echo ">>> Test KUBECONFIG"
+kubectl version
+kubectl cluster-info
+kubectl get all --all-namespaces
+```
 
 **Note**: you will need to export KUBECONFIG every time you open a new shell.
 
@@ -72,10 +82,13 @@ account.hcl, region.hcl, and service.hcl are used to manage variables includes f
 - Attach the `--terragrunt-non-interactive` to use  `run-all` commands without confirmation **Use with Caution!**
 
 *Plan*
-- ` terragrunt run-all plan --terragrunt-non-interactive`
+- `terragrunt run-all --terragrunt-non-interactive plan`
 
 *Apply*
-- ` terragrunt run-all apply --terragrunt-non-interactive`
+- `terragrunt run-all --terragrunt-non-interactive apply`
+
+*Destroy*
+- `terragrunt run-all --terragrunt-non-interactive destroy`
 
 ### Troubleshooting
 
