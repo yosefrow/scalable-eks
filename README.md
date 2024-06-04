@@ -153,18 +153,15 @@ for i in {1..10}; do
 done
 ```
 
-### Remove one message
+### Remove next message
 
  ```bash
-# Get a message to delete
+# Get the next message
 aws sqs receive-message --queue-url ${SQS_QUEUE_URL}
 
-# Take note of the 
-RECEIPT_HANDLE="a very long string provided in the response from above command"
-
-# Delete the message by its receipt handle
-aws sqs delete-message --queue-url ${SQS_QUEUE_URL} \
-    --receipt-handle "${RECEIPT_HANDLE}"
+# Delete the next message by its receipt handle
+RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} |  jq -r '.[][].ReceiptHandle')
+aws sqs delete-message --queue-url ${SQS_QUEUE_URL} --receipt-handle "${RECEIPT_HANDLE}"
 ```
 
 ### Purge the queue to reset
