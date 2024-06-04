@@ -43,7 +43,7 @@ inputs = {
   oidc_providers = {
     main = {
       provider_arn               = dependency.eks.outputs.oidc_provider_arn
-      namespace_service_accounts = ["${local.component.helm.namespace}:${local.component.helm.name}"]
+      namespace_service_accounts = ["${local.component.helm.namespace}:${local.component.irsa.service}"]
     }
   }
 

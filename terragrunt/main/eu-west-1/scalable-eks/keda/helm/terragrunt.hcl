@@ -39,8 +39,12 @@ inputs = {
 
   set = [
     {
-      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      name  = "podIdentity.aws.irsa.roleArn"
       value = dependency.iam-role.outputs.iam_role_arn
+    },
+    {
+      name  = "podIdentity.aws.irsa.enabled"
+      value = "true"
     }
   ]
 }
