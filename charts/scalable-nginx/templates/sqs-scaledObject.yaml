@@ -1,0 +1,25 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "chart.fullname" . }}-sqs
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "chart.fullname" . }}
+  pollingInterval:  30
+  cooldownPeriod:   300
+  minReplicaCount:  1
+  maxReplicaCount:  15
+  fallback:
+    failureThreshold: 3
+    replicas: 2
+  triggers:
+  - type: aws-sqs-queue
+    metadata:
+      {{- with .Values.keda.sqs }}
+      queueURL: "{{ .queueURL}}"
+      queueLength: "{{ .queueLength }}"
+      awsRegion: "{{ .awsRegion}}"
+      identityOwner: operator
+      {{- end -}}

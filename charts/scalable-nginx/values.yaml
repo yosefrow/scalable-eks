@@ -1,0 +1,11 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+fullnameOverride: ""
+
+keda:
+  sqs:
+    queueURL: "https://sqs.eu-west-1.amazonaws.com/123456789/example-name.fifo"
+    queueLength: "1" # How many messages each pod can handle
+    awsRegion:  "eu-west-1"
