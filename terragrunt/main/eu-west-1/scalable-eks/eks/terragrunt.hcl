@@ -49,8 +49,6 @@ inputs = {
     vpc-cni = {
       most_recent = true
     }
-    
-
   }
 
   vpc_id     = dependency.vpc.outputs.vpc_id
@@ -79,6 +77,8 @@ inputs = {
   # Cluster access entry
   # To add the current caller identity as an administrator
   enable_cluster_creator_admin_permissions = true
+  # IRSA Configuration
+  enable_irsa = true
 
   # access_entries = {
   #   # Consider adding an access entry with a policy associated
