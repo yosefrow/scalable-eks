@@ -14,7 +14,7 @@ EKS Deployment that supports Scaling
 Option 1. Modify terragrunt/{account}/account.hcl so that aws_profile reflects the name of the aws profile in your ~/.aws/config 
 
 Option 2. (Temporary) Set env vars by copying .env -> .env.example 
-**Requires running `source .env` in each new terminal session**
+**Requires running `set -a; source .env; set +a` in each new terminal session**
 
 (yosefrow-main by default)
 
@@ -122,3 +122,53 @@ min_size, max_size, and desired_size are all the same (2) because we haven't pro
 **Note**: Changing desired_size after provisioning will not influence the number of nodes, but you can raise the min_size as a workaround
 
 Deployed to: https://eu-west-1.console.aws.amazon.com/eks/home?region=eu-west-1#/clusters/scalable-eks-cluster
+
+## KEDA Autoscaler
+
+KEDA Autoscaler is used to horizontally scale applications based on specific metrics. In our project, we focus on SQS metrics
+
+It is deployed via the `keda/helm` modules and the aws rbac role and policy is deployed via the `keda/iam-role` and `keda/iam-policy` modules
+
+## AWS SQS
+
+An AWS SQS queue is used to demonstrate load based autoscaling. You can manipulate SQS in the following ways
+
+### Set environment
+
+```bash
+AWS_ACCOUNT_ID=203513363151
+SQS_QUEUE_URL=https://sqs.eu-west-1.amazonaws.com/${AWS_ACCOUNT_ID}/scalable-eks.fifo
+SQS_GROUP_ID=123456789
+TEST_MESSAGE="Testing KEDA"
+```
+
+### Fill the queue with messages
+
+```bash
+for i in {1..10}; do
+    aws sqs send-message --queue-url ${SQS_QUEUE_URL} \
+        --message-body "$TEST_MESSAGE $(date +%s)" \
+        --message-group-id ${SQS_GROUP_ID} \
+        --message-deduplication-id $i;
+done
+```
+
+### Remove one message
+
+ ```bash
+# Get a message to delete
+aws sqs receive-message --queue-url ${SQS_QUEUE_URL}
+
+# Take note of the 
+RECEIPT_HANDLE="a very long string provided in the response from above command"
+
+# Delete the message by its receipt handle
+aws sqs delete-message --queue-url ${SQS_QUEUE_URL} \
+    --receipt-handle "${RECEIPT_HANDLE}"
+```
+
+### Purge the queue to reset
+
+```bash
+aws sqs purge-queue --queue-url ${SQS_QUEUE_URL}
+```
