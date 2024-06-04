@@ -1,3 +1,0 @@
-serviceAccount:
-  annotations:
-    eks.amazonaws.com/role-arn: ${keda_operator_role_arn}

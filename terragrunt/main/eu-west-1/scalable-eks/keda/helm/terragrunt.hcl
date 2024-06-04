@@ -33,10 +33,12 @@ inputs = {
     force_update  = true
     wait          = true
     recreate_pods = false
+    deploy        = 1
   }
-  values = [
-    templatefile("${get_terragrunt_dir()}/values.yaml", {
-      keda_operator_role_arn = dependency.iam-role.outputs.iam_role_arn
-    }),
+  set = [
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = dependency.iam-role.outputs.iam_role_arn
+    }
   ]
 }
