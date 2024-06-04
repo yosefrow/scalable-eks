@@ -25,16 +25,18 @@ terraform {
 inputs = {
   namespace  = local.component.helm.namespace
   repository = "https://kedacore.github.io/charts"
-
   app = {
-    name          = local.component.helm.name
-    chart         = "keda"
-    version       = "2.14.0"
-    force_update  = true
-    wait          = true
-    recreate_pods = false
-    deploy        = 1
+    name             = local.component.helm.name
+    version          = "2.14.0"
+    chart            = "keda"
+    force_update     = true # potentially dangerous!
+    cleanup_on_fail  = true # potentially dangerous!
+    wait             = true
+    recreate_pods    = false
+    create_namespace = true
+    deploy           = 1
   }
+
   set = [
     {
       name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
