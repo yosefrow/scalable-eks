@@ -84,6 +84,7 @@ Terragrunt is used to keep our Terraform DRY
     |       `-- service_name
     |           |-- service.hcl
     |           `-- component
+                    |-- component.hcl
     |               `-- terragrunt.hcl
 ```
 
