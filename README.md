@@ -50,19 +50,9 @@ Option 2. (Temporary) Set env vars by copying .env -> .env.example
 
 When you deploy EKS it will automatically setup a kubeconfig file for you at "${REPO_ROOT_DIR}/terragrunt/kubeconfig" which will also be used by the helm provider 
 
-```bash
-echo ">>> Set KUBECONFIG"
-REPO_ROOT_DIR=~/path-to-repo-on-my-pc # Set to whatever your path is
-# For example: REPO_ROOT_DIR=~/projects/scalable-eks
-export KUBECONFIG="${REPO_ROOT_DIR}/terragrunt/kubeconfig"
+You can run the following command to setup kubectl for your current shell `/source ./load-kubeconfig.sh ${YOUR_AWS_PROFILE}`
 
-echo ">>> Test KUBECONFIG"
-kubectl version
-kubectl cluster-info
-kubectl get all --all-namespaces
-```
-
-**Note**: you will need to export KUBECONFIG every time you open a new shell.
+**Note**: you will need to setup KUBECONFIG every time you open a new shell.
 
 **Tip**: If you run into API errors, make sure you are running a compatible version of awscli (which generates the config) and kubectl (which uses the config). EKS is provisioned with v1.30.
 
