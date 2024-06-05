@@ -180,7 +180,7 @@ done
 aws sqs receive-message --queue-url ${SQS_QUEUE_URL}
 
 # Delete the next message by its receipt handle
-RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} | jq -r '.[][].ReceiptHandle')
+RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} | jq -r '.[][].ReceiptHandle');
 aws sqs delete-message --queue-url ${SQS_QUEUE_URL} --receipt-handle "${RECEIPT_HANDLE}"
 ```
 
@@ -215,5 +215,5 @@ The KEDA ScaledObject is configured to scale based on the number of messages in 
 4. Generate messages for the queue using instructions above
 5. Observe that scalable-nginx scales up to 10
 6. Delete 5 messages from the queue using instructions above
-7. Observe that after cooldown time (5 min) with no sqs activity, keda hpa scales down to min.
+7. Observe that after cooldown time (5 min) with no sqs activity, keda hpa scales down to min. (Targets = 500m/1)
 8. Observe that after auto scaledown, hpa scales back up to 5 to match the number of messages in the queue
