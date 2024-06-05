@@ -5,6 +5,7 @@ include "root" {
 
 locals {
   service = read_terragrunt_config(find_in_parent_folders("service.hcl")).locals
+  account = read_terragrunt_config(find_in_parent_folders("account.hcl")).locals
   cluster_name = "${local.service.name}-cluster"
 }
 
@@ -23,7 +24,10 @@ terraform {
 
   after_hook "kubeconfig" {
     commands = ["apply"]
-    execute  = ["bash", "-c", "aws eks update-kubeconfig --name ${local.cluster_name} --kubeconfig ${include.root.locals.kubeconfig} 2>/dev/null"]
+    execute  = [
+      "bash", "-c", 
+      "export AWS_PROFILE=${local.account.aws_profile}; echo '::: Generating kubeconfig at '${include.root.locals.kubeconfig}' ...'; aws eks update-kubeconfig --name ${local.cluster_name} --kubeconfig ${include.root.locals.kubeconfig}"
+    ]
   }
 }
 
