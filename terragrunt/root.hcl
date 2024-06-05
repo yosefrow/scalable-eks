@@ -3,9 +3,10 @@ locals {
   region  = read_terragrunt_config(find_in_parent_folders("region.hcl")).locals
 
   # Unique S3 Prefix to ensure state buckets don't conflict
-  tf_state_s3_prefix   =  get_env("TF_STATE_S3_PREFIX", "yosefrow")
-  tf_state_region      = "eu-west-1"
-  kubeconfig           = "${get_repo_root()}/terragrunt/kubeconfig"
+  tf_state_s3_prefix = get_env("TF_STATE_S3_PREFIX", "yosefrow")
+  tf_state_region    = "eu-west-1"
+  terragrunt_root    = "${get_repo_root()}/terragrunt"
+  kubeconfig         = "${local.terragrunt_root}/kubeconfig"
 }
 
 generate "provider" {
