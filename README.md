@@ -39,16 +39,16 @@ EKS Deployment that supports Scaling based on SQS Changes
 
 ### Custom Settings
 
-Option 1. Modify terragrunt/{account}/account.hcl so that aws_profile reflects the name of the aws profile in your ~/.aws/config 
+Option 1. Modify `terragrunt/{account}/account.hcl` so that aws_profile reflects the name of the aws profile in your `~/.aws/config`
 
-Option 2. (Temporary) Set env vars by copying .env -> .env.example 
+Option 2. (Temporary) Set env vars by copying `.env` -> `.env.example` 
 **Requires running `set -a; source .env; set +a` in each new terminal session**
 
 (yosefrow-main by default)
 
 ### Setup Kubectl
 
-When you deploy EKS it will automatically setup a kubeconfig file for you at "${REPO_ROOT_DIR}/terragrunt/kubeconfig" which will also be used by the helm provider 
+When you deploy EKS it will automatically setup a kubeconfig file for you at `${REPO_ROOT_DIR}/terragrunt/kubeconfig` which will also be used by the helm provider 
 
 You can run the following command to setup kubectl for your current shell `/source ./load-kubeconfig.sh ${YOUR_AWS_PROFILE}`
 
@@ -58,7 +58,7 @@ You can run the following command to setup kubectl for your current shell `/sour
 
 ### Setup AWS Profile
 
-Modify ~/.aws/config
+Modify `~/.aws/config`
 
 Example config:
 ```
@@ -98,7 +98,7 @@ The main configuration including the configuration that is included in all modul
 
 ### Other files
 
-account.hcl, region.hcl, and service.hcl are used to manage variables includes for the Account, Region, and Service respectively.
+account.hcl, region.hcl, service.hcl, and component.hcl are used to manage variables includes for the Account, Region, Service, and Component respectively.
 
 ### Basic Commands
 
@@ -116,9 +116,13 @@ account.hcl, region.hcl, and service.hcl are used to manage variables includes f
 
 ### Troubleshooting
 
-Removing `.terragrunt-cache` and `.terraform.lock.hcl` can solve many problems that occur with TF and TG e.g. `find': find . -regex '.*\.\(terragrunt-cache\|terraform\.lock\.hcl\)' -exec rm -rf {} \;`
+Removing `.terragrunt-cache` and `.terraform.lock.hcl` can solve many problems that occur with TF and TG e.g. find: `find . -regex '.*\.\(terragrunt-cache\|terraform\.lock\.hcl\)' -exec rm -rf {} \;`
 
-If you face a locking issue and you are sure nothing else is using the lock you can remove the lock with `terragrunt force-unlock lockid`
+If you face a locking issue and you are sure nothing else is using the lock you can remove the lock with `terragrunt force-unlock ${LOCKID}`
+
+### Caching
+
+We did not configure caching for plugins, but it can save time and disk space to do so.
 
 ## VPC & Subnets
 
@@ -134,13 +138,16 @@ Deployed to: https://eu-west-1.console.aws.amazon.com/vpcconsole/home?region=eu-
 
 The EKS Cluster is deployed contains 2 nodes distributed to 3 private networks in 3 AZs of the VPC we created. 
 
-Although we allow public access to the API, in a production environment we would remove this access and only allow access securely such as through a VPN.
 
 min_size, max_size, and desired_size are all the same (2) because we haven't provisioned a cluster auto-scaler
 
 **Note**: Changing desired_size after provisioning will not influence the number of nodes, but you can raise the min_size as a workaround
 
 Deployed to: https://eu-west-1.console.aws.amazon.com/eks/home?region=eu-west-1#/clusters/scalable-eks-cluster
+
+### Security
+
+Although we allow public access to the API, in a production environment we would remove this access and only allow access securely such as through a VPN.
 
 ## KEDA Autoscaler
 
@@ -174,15 +181,17 @@ for i in {1..10}; do
 done
 ```
 
-### Remove next message
+### Remove next 5 messages
 
  ```bash
 # Get the next message
 aws sqs receive-message --queue-url ${SQS_QUEUE_URL}
 
-# Delete the next message by its receipt handle
-RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} | jq -r '.[][].ReceiptHandle');
-aws sqs delete-message --queue-url ${SQS_QUEUE_URL} --receipt-handle "${RECEIPT_HANDLE}"
+# Delete the next 5 messagse by their receipt handles
+for i in {1..5}; do
+    RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} | jq -r '.[][].ReceiptHandle')
+    aws sqs delete-message --queue-url ${SQS_QUEUE_URL} --receipt-handle "${RECEIPT_HANDLE}"
+done
 ```
 
 ### Purge the queue to reset
