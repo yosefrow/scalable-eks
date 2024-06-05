@@ -17,6 +17,15 @@ dependency "sqs" {
     queue_url = "https://sqs.eu-west-1.amazonaws.com/1234567/fake.fifo"
   }
 }
+dependency "keda-helm" {
+  config_path = "../../keda/helm"
+
+  # Set mock outputs that are returned when there are no outputs available before apply
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs = {
+    deployment = "fake-deployment"
+  }
+}
 
 terraform {
   source = "tfr:///terraform-module/release/helm?version=2.8.2"
