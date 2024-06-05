@@ -1,6 +1,34 @@
 # scalable-eks
 
-EKS Deployment that supports Scaling
+EKS Deployment that supports Scaling based on SQS Changes
+
+## Main Flows
+
+1. Publish or Delete SQS Messages -> KEDA detects change -> Updates Nginx ScaledObject -> Updates Nginx HPA -> Updates Nginx Deployment 
+
+## Components
+
+```
+|-- charts
+|   `-- scalable-nginx
+|-- scripts
+|   |-- helm-package-and-push.sh
+|   `-- load-kubeconfig.sh
+`-- terragrunt
+    |-- kubeconfig
+    |-- main
+    |   `-- eu-west-1
+    |       `-- scalable-eks
+    |           |-- eks
+    |           |-- keda
+    |           |   |-- helm
+    |           |   |-- iam-policy
+    |           |   `-- iam-role
+    |           |-- scalable-nginx
+    |           |   `-- helm
+    |           |-- sqs
+    |           `-- vpc
+```
 
 ## Local Environment 
 
@@ -22,19 +50,9 @@ Option 2. (Temporary) Set env vars by copying .env -> .env.example
 
 When you deploy EKS it will automatically setup a kubeconfig file for you at "${REPO_ROOT_DIR}/terragrunt/kubeconfig" which will also be used by the helm provider 
 
-```bash
-echo ">>> Set KUBECONFIG"
-REPO_ROOT_DIR=~/path-to-repo-on-my-pc # Set to whatever your path is
-# For example: REPO_ROOT_DIR=~/projects/scalable-eks
-export KUBECONFIG="${REPO_ROOT_DIR}/terragrunt/kubeconfig"
+You can run the following command to setup kubectl for your current shell `/source ./load-kubeconfig.sh ${YOUR_AWS_PROFILE}`
 
-echo ">>> Test KUBECONFIG"
-kubectl version
-kubectl cluster-info
-kubectl get all --all-namespaces
-```
-
-**Note**: you will need to export KUBECONFIG every time you open a new shell.
+**Note**: you will need to setup KUBECONFIG every time you open a new shell.
 
 **Tip**: If you run into API errors, make sure you are running a compatible version of awscli (which generates the config) and kubectl (which uses the config). EKS is provisioned with v1.30.
 
@@ -127,7 +145,9 @@ Deployed to: https://eu-west-1.console.aws.amazon.com/eks/home?region=eu-west-1#
 
 KEDA Autoscaler is used to horizontally scale applications based on specific metrics. In our project, we focus on SQS metrics
 
-It is deployed via the `keda/helm` modules and the aws rbac role and policy is deployed via the `keda/iam-role` and `keda/iam-policy` modules
+It is deployed via the `keda/helm` modules and the aws irsa role and policy is deployed via the `keda/iam-role` and `keda/iam-policy` modules
+
+KEDA controller is configured to be able to access SQS using the role and policy mentioned above.
 
 ## AWS SQS
 
@@ -153,18 +173,15 @@ for i in {1..10}; do
 done
 ```
 
-### Remove one message
+### Remove next message
 
  ```bash
-# Get a message to delete
+# Get the next message
 aws sqs receive-message --queue-url ${SQS_QUEUE_URL}
 
-# Take note of the 
-RECEIPT_HANDLE="a very long string provided in the response from above command"
-
-# Delete the message by its receipt handle
-aws sqs delete-message --queue-url ${SQS_QUEUE_URL} \
-    --receipt-handle "${RECEIPT_HANDLE}"
+# Delete the next message by its receipt handle
+RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} | jq -r '.[][].ReceiptHandle');
+aws sqs delete-message --queue-url ${SQS_QUEUE_URL} --receipt-handle "${RECEIPT_HANDLE}"
 ```
 
 ### Purge the queue to reset
@@ -172,3 +189,31 @@ aws sqs delete-message --queue-url ${SQS_QUEUE_URL} \
 ```bash
 aws sqs purge-queue --queue-url ${SQS_QUEUE_URL}
 ```
+## Scalable Nginx (SQS)
+
+An instance of nginx which is designed to be scalable through the use of KEDA ScaledObject resource which generates and manages and HPA
+
+### Helm Chart
+
+The `charts/scalable-nginx` is created by using helm dependency on the bitnami nginx chart and pushed to the docker oci registry.
+
+It can be built with `/scripts/helm-package-and-push.sh`
+
+### Deployment
+
+The helm chart is deployed through terragrunt `./main/eu-west-1/scalable-eks/scalable-nginx/helm/`
+
+### KEDA Configuration
+
+The KEDA ScaledObject is configured to scale based on the number of messages in an SQS FIFO queue and uses the KEDA controller identity for access to SQS information.
+
+## End-to-End Tests
+
+1. `cd terragrunt; terragrunt run-all --terragrunt-non-interactive apply`
+2. Wait for everything to finish applying (30-40 minutes on average)
+3. Check Kubernetes cluster to confirm all is successfully applied
+4. Generate messages for the queue using instructions above
+5. Observe that scalable-nginx scales up to 10
+6. Delete 5 messages from the queue using instructions above
+7. Observe that after cooldown time (5 min) with no sqs activity, keda hpa scales down to min. (Targets = 500m/1)
+8. Observe that after auto scaledown, hpa scales back up to 5 to match the number of messages in the queue

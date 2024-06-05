@@ -1,8 +1,5 @@
 locals {
-  name = "keda"
-  irsa = {
-    service = "keda-operator"
-  }
+  name = "scalable-nginx"
   helm = {
     name      = local.name
     namespace = local.name

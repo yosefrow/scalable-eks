@@ -1,0 +1,5 @@
+{{- $fullName := include "chart.fullname" . -}}
+{{ with .Values.keda.sqs -}}
+    Deployed nginx with autoscaling based on queue:
+    "{{ .queueURL }}"
+{{- end }}

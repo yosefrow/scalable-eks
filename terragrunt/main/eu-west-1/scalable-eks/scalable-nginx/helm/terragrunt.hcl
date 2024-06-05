@@ -8,13 +8,22 @@ locals {
   component = read_terragrunt_config(find_in_parent_folders("component.hcl")).locals
 }
 
-dependency "iam-role" {
-  config_path = "../iam-role"
+dependency "sqs" {
+  config_path = "../../sqs"
 
   # Set mock outputs that are returned when there are no outputs available before apply
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   mock_outputs = {
-    iam_role_arn = "arn:fake-iam-role"
+    queue_url = "https://sqs.eu-west-1.amazonaws.com/1234567/fake.fifo"
+  }
+}
+dependency "keda-helm" {
+  config_path = "../../keda/helm"
+
+  # Set mock outputs that are returned when there are no outputs available before apply
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs = {
+    deployment = "fake-deployment"
   }
 }
 
@@ -24,11 +33,11 @@ terraform {
 
 inputs = {
   namespace  = local.component.helm.namespace
-  repository = "https://kedacore.github.io/charts"
+  repository = ""
   app = {
     name             = local.component.helm.name
-    version          = "2.14.0"
-    chart            = "keda"
+    version          = "0.1.0"
+    chart            = "oci://registry-1.docker.io/yosefrow/scalable-nginx"
     force_update     = true # potentially dangerous!
     cleanup_on_fail  = true # potentially dangerous!
     wait             = true
@@ -39,12 +48,8 @@ inputs = {
 
   set = [
     {
-      name  = "podIdentity.aws.irsa.roleArn"
-      value = dependency.iam-role.outputs.iam_role_arn
-    },
-    {
-      name  = "podIdentity.aws.irsa.enabled"
-      value = "true"
+      name  = "keda.sqs.queueURL"
+      value = dependency.sqs.outputs.queue_url
     }
   ]
 }
