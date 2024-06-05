@@ -1,6 +1,34 @@
 # scalable-eks
 
-EKS Deployment that supports Scaling
+EKS Deployment that supports Scaling based on SQS Changes
+
+## Main Flows
+
+1. Publish or Delete SQS Messages -> KEDA detects change -> Updates Nginx ScaledObject -> Updates Nginx HPA -> Updates Nginx Deployment 
+
+## Components
+
+```
+|-- charts
+|   `-- scalable-nginx
+|-- scripts
+|   |-- helm-package-and-push.sh
+|   `-- load-kubeconfig.sh
+`-- terragrunt
+    |-- kubeconfig
+    |-- main
+    |   `-- eu-west-1
+    |       `-- scalable-eks
+    |           |-- eks
+    |           |-- keda
+    |           |   |-- helm
+    |           |   |-- iam-policy
+    |           |   `-- iam-role
+    |           |-- scalable-nginx
+    |           |   `-- helm
+    |           |-- sqs
+    |           `-- vpc
+```
 
 ## Local Environment 
 
