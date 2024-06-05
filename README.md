@@ -127,7 +127,9 @@ Deployed to: https://eu-west-1.console.aws.amazon.com/eks/home?region=eu-west-1#
 
 KEDA Autoscaler is used to horizontally scale applications based on specific metrics. In our project, we focus on SQS metrics
 
-It is deployed via the `keda/helm` modules and the aws rbac role and policy is deployed via the `keda/iam-role` and `keda/iam-policy` modules
+It is deployed via the `keda/helm` modules and the aws irsa role and policy is deployed via the `keda/iam-role` and `keda/iam-policy` modules
+
+KEDA controller is configured to be able to access SQS using the role and policy mentioned above.
 
 ## AWS SQS
 
@@ -160,7 +162,7 @@ done
 aws sqs receive-message --queue-url ${SQS_QUEUE_URL}
 
 # Delete the next message by its receipt handle
-RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} |  jq -r '.[][].ReceiptHandle')
+RECEIPT_HANDLE=$(aws sqs receive-message --queue-url ${SQS_QUEUE_URL} | jq -r '.[][].ReceiptHandle')
 aws sqs delete-message --queue-url ${SQS_QUEUE_URL} --receipt-handle "${RECEIPT_HANDLE}"
 ```
 
@@ -169,3 +171,31 @@ aws sqs delete-message --queue-url ${SQS_QUEUE_URL} --receipt-handle "${RECEIPT_
 ```bash
 aws sqs purge-queue --queue-url ${SQS_QUEUE_URL}
 ```
+## Scalable Nginx (SQS)
+
+An instance of nginx which is designed to be scalable through the use of KEDA ScaledObject resource which generates and manages and HPA
+
+### Helm Chart
+
+The `charts/scalable-nginx` is created by using helm dependency on the bitnami nginx chart and pushed to the docker oci registry.
+
+It can be built with `/scripts/helm-package-and-push.sh`
+
+### Deployment
+
+The helm chart is deployed through terragrunt `./main/eu-west-1/scalable-eks/scalable-nginx/helm/`
+
+### KEDA Configuration
+
+The KEDA ScaledObject is configured to scale based on the number of messages in an SQS FIFO queue and uses the KEDA controller identity for access to SQS information.
+
+## End-to-End Tests
+
+1. `cd terragrunt; terragrunt run-all --terragrunt-non-interactive apply`
+2. Wait for everything to finish applying (30-40 minutes on average)
+3. Check Kubernetes cluster to confirm all is successfully applied
+4. Generate messages for the queue using instructions above
+5. Observe that scalable-nginx scales up to 10
+6. Delete 5 messages from the queue using instructions above
+7. Observe that after cooldown time (5 min) with no sqs activity, keda hpa scales down to min.
+8. Observe that after auto scaledown, hpa scales back up to 5 to match the number of messages in the queue
